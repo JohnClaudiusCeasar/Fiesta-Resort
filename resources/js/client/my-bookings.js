@@ -510,9 +510,220 @@ function closeModal() {
   }
 }
 
-function modifyBooking(bookingId) {
-  if (window.showInfo) {
-    window.showInfo(`Modify booking functionality will be implemented soon. Booking ID: ${bookingId}`);
+let currentModifyBooking = null;
+
+async function modifyBooking(bookingId) {
+  try {
+    // Fetch booking details
+    const url = apiBaseUrl || "/client/bookings";
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      credentials: "same-origin",
+    });
+
+    let booking = null;
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success && result.data) {
+        booking = result.data.find(b => b.id == bookingId);
+      }
+    }
+
+    // Fallback to localStorage if API fails
+    if (!booking) {
+      const bookings = JSON.parse(localStorage.getItem("myBookings") || "[]");
+      booking = bookings.find((b) => b.id == bookingId);
+    }
+
+    if (!booking) {
+      if (window.showError) window.showError("Booking not found");
+      return;
+    }
+
+    currentModifyBooking = booking;
+    showModifyModal(booking);
+  } catch (error) {
+    console.error("Error loading booking:", error);
+    if (window.showError) window.showError("Failed to load booking details");
+  }
+}
+
+function showModifyModal(booking) {
+  const modal = document.getElementById("modifyBookingModal");
+  const checkInInput = document.getElementById("modifyCheckInDate");
+  const checkOutInput = document.getElementById("modifyCheckOutDate");
+  const nightsCount = document.getElementById("modifyNightsCount");
+  const totalPrice = document.getElementById("modifyTotalPrice");
+
+  if (!modal || !checkInInput || !checkOutInput) return;
+
+  // Set current values
+  const checkIn = booking.checkIn || booking.check_in;
+  const checkOut = booking.checkOut || booking.check_out;
+  
+  checkInInput.value = checkIn;
+  checkOutInput.value = checkOut;
+
+  // Set minimum dates
+  const today = new Date().toISOString().split('T')[0];
+  checkInInput.min = today;
+  checkOutInput.min = today;
+
+  // Calculate initial nights and price
+  updateModifyPriceCalculation(booking);
+
+  // Setup date change handlers
+  checkInInput.onchange = function() {
+    const newCheckIn = new Date(checkInInput.value + 'T00:00:00');
+    const nextDay = new Date(newCheckIn);
+    nextDay.setDate(nextDay.getDate() + 1);
+    checkOutInput.min = nextDay.toISOString().split('T')[0];
+    
+    // Auto-update check-out if it's before new minimum
+    if (checkOutInput.value) {
+      const currentCheckOut = new Date(checkOutInput.value + 'T00:00:00');
+      if (currentCheckOut <= newCheckIn) {
+        checkOutInput.value = nextDay.toISOString().split('T')[0];
+      }
+    }
+    
+    updateModifyPriceCalculation(booking);
+  };
+
+  checkOutInput.onchange = function() {
+    updateModifyPriceCalculation(booking);
+  };
+
+  modal.classList.add("show");
+}
+
+function updateModifyPriceCalculation(booking) {
+  const checkInInput = document.getElementById("modifyCheckInDate");
+  const checkOutInput = document.getElementById("modifyCheckOutDate");
+  const nightsCount = document.getElementById("modifyNightsCount");
+  const totalPrice = document.getElementById("modifyTotalPrice");
+
+  if (!checkInInput.value || !checkOutInput.value) return;
+
+  const checkIn = new Date(checkInInput.value + 'T00:00:00');
+  const checkOut = new Date(checkOutInput.value + 'T00:00:00');
+  const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+  if (nights > 0) {
+    const pricePerNight = (booking.totalPrice || 0) / (booking.nights || 1);
+    const newTotal = Math.round(pricePerNight * nights);
+    
+    nightsCount.textContent = nights;
+    totalPrice.textContent = newTotal.toLocaleString();
+  }
+}
+
+function hideModifyModal() {
+  const modal = document.getElementById("modifyBookingModal");
+  if (modal) {
+    modal.classList.remove("show");
+  }
+  currentModifyBooking = null;
+}
+
+// Setup modify modal handlers
+document.addEventListener("DOMContentLoaded", function() {
+  const modifyModalClose = document.getElementById("modifyModalClose");
+  const modifyModalCancel = document.getElementById("modifyModalCancel");
+  const modifyModalConfirm = document.getElementById("modifyModalConfirm");
+
+  if (modifyModalClose) {
+    modifyModalClose.addEventListener("click", hideModifyModal);
+  }
+
+  if (modifyModalCancel) {
+    modifyModalCancel.addEventListener("click", hideModifyModal);
+  }
+
+  if (modifyModalConfirm) {
+    modifyModalConfirm.addEventListener("click", submitModifyBooking);
+  }
+
+  // Close on outside click
+  const modal = document.getElementById("modifyBookingModal");
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        hideModifyModal();
+      }
+    });
+  }
+});
+
+async function submitModifyBooking() {
+  if (!currentModifyBooking) return;
+
+  const checkInInput = document.getElementById("modifyCheckInDate");
+  const checkOutInput = document.getElementById("modifyCheckOutDate");
+  const confirmBtn = document.getElementById("modifyModalConfirm");
+
+  if (!checkInInput.value || !checkOutInput.value) {
+    if (window.showError) window.showError("Please select both check-in and check-out dates");
+    return;
+  }
+
+  const checkIn = new Date(checkInInput.value + 'T00:00:00');
+  const checkOut = new Date(checkOutInput.value + 'T00:00:00');
+
+  if (checkOut <= checkIn) {
+    if (window.showError) window.showError("Check-out date must be after check-in date");
+    return;
+  }
+
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = "Updating...";
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/${currentModifyBooking.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRF-TOKEN": getCsrfToken(),
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        check_in: checkInInput.value,
+        check_out: checkOutInput.value,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Failed to update booking");
+    }
+
+    if (window.showSuccess) {
+      window.showSuccess(result.message || "Booking dates updated successfully!");
+    }
+    
+    hideModifyModal();
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = "Update Booking";
+    
+    // Reload bookings to show updated data
+    setTimeout(() => {
+      loadBookings();
+    }, 1000);
+  } catch (error) {
+    console.error("Error modifying booking:", error);
+    if (window.showError) {
+      window.showError(error.message || "Failed to modify booking. Please try again or contact the resort.");
+    }
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = "Update Booking";
   }
 }
 

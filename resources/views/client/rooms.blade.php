@@ -7,11 +7,11 @@
 @section('title', 'Our Rooms - Fiesta Resort')
 
 @push('styles')
-  @vite('resources/css/client/hotels.css')
+  @vite('resources/css/client/home.css')
 @endpush
 
 @push('scripts')
-  @vite('resources/js/client/hotels.js')
+  @vite('resources/js/client/home.js')
 @endpush
 
 @section('content')
@@ -34,9 +34,11 @@
         ]"
       >
         <x-slot:icon>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="1" x2="12" y2="23"></line>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6 4h6a4 4 0 0 1 0 8H6z"></path>
+            <line x1="6" y1="4" x2="6" y2="20"></line>
+            <line x1="4" y1="8" x2="14" y2="8"></line>
+            <line x1="4" y1="10" x2="14" y2="10"></line>
           </svg>
         </x-slot:icon>
       </x-client.filter-group>
@@ -63,9 +65,9 @@
     </div>
   </section>
 
-  <section class="all-hotels-section">
+  <section class="rooms-listing-section" style="padding: 60px 20px; background-color: #fafafa;">
     <div class="section-container">
-      <div class="hotels-count">
+      <div class="rooms-count" style="margin-bottom: 2rem; font-size: 18px; color: #152c5b; font-weight: 600;">
         <span id="roomsCount">{{ $roomTypes->count() }}</span> room {{ $roomTypes->count() == 1 ? 'type' : 'types' }} available
       </div>
 
@@ -88,41 +90,27 @@
         </div>
       @endif
 
-      <div class="hotels-grid">
+      <div class="rooms-grid">
         @forelse($roomTypes as $roomType)
-          <div class="hotel-card"
-            data-price="{{ $roomType['price'] }}"
-            data-room-type="{{ $roomType['room_type'] }}">
-            <div class="card-image">
-              <img src="{{ asset('assets/' . $roomType['image']) }}" alt="{{ $roomType['room_type'] }}" />
-              <div class="card-price">₱{{ number_format($roomType['price'], 0) }} per night</div>
-              @if (!empty($roomType['badge']))
-                <div class="card-badge {{ Str::lower($roomType['badge']) }}">{{ $roomType['badge'] }}</div>
-              @endif
-            </div>
-            <div class="card-content">
-              <div class="card-header">
-                <h3 class="card-title">{{ $roomType['room_type'] }}</h3>
-              </div>
-              <p class="card-location">Brgy. Ipil, Surigao City, Surigao del Norte</p>
-              <p class="card-description">
-                @if($checkIn && $checkOut)
-                  {{ $roomType['room_count'] }} {{ $roomType['room_count'] == 1 ? 'room' : 'rooms' }} available for your selected dates.
-                @else
-                  {{ $roomType['room_count'] }} {{ $roomType['room_count'] == 1 ? 'room' : 'rooms' }} available.
-                @endif
-                Comfortable and well-appointed accommodation with modern amenities.
-              </p>
-              <div class="card-features">
-                @foreach ($roomType['features'] as $feature)
-                  <span class="feature-tag">{{ $feature }}</span>
-                @endforeach
-              </div>
-              <a href="{{ route('client.room-type-details') }}?room_type={{ urlencode($roomType['room_type']) }}@if($checkIn && $checkOut)&check_in={{ $checkIn }}&check_out={{ $checkOut }}&persons={{ $persons }}@endif" class="book-now-btn" style="text-decoration: none; display: inline-block; text-align: center;">View Details</a>
-            </div>
-          </div>
+          <x-client.room-card 
+            title="{{ $roomType['room_type'] }}"
+            location="Brgy. Ipil, Surigao City"
+            :price="(int)$roomType['price']"
+            :rating="0"
+            image="{{ $roomType['image'] }}"
+            badge="{{ $roomType['badge'] }}"
+            :features="$roomType['features']"
+            :url="route('client.room-type-details') . '?room_type=' . urlencode($roomType['room_type']) . ($checkIn && $checkOut ? '&check_in=' . $checkIn . '&check_out=' . $checkOut . '&persons=' . $persons : '')"
+            :data-attributes="['price' => $roomType['price'], 'room-type' => $roomType['room_type']]"
+          >
+            @if($checkIn && $checkOut)
+              {{ $roomType['room_count'] }} {{ $roomType['room_count'] == 1 ? 'room' : 'rooms' }} available for your selected dates
+            @else
+              {{ $roomType['room_count'] }} {{ $roomType['room_count'] == 1 ? 'room' : 'rooms' }} available
+            @endif
+          </x-client.room-card>
         @empty
-          <div class="empty-hotels-message" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
             @if($checkIn && $checkOut)
               <p style="font-size: 1.25rem; color: #64748b; margin-bottom: 0.5rem;">No rooms available for your selected dates and criteria.</p>
               <p style="font-size: 1rem; color: #94a3b8; margin-bottom: 1.5rem;">Try adjusting your dates or number of guests, or <a href="{{ route('client.rooms') }}" style="color: #3b82f6; text-decoration: underline;">browse all available rooms</a>.</p>

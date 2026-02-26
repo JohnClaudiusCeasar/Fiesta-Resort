@@ -7,8 +7,7 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   animation: fadeIn 0.5s ease-in;
   display: flex;
   flex-direction: column;
@@ -79,6 +78,7 @@ body.fade-out {
   align-items: center;
   position: relative;
   padding: 40px 20px;
+  overflow-y: auto;
 }
 
 .login-container::before {

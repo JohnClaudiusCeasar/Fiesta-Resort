@@ -3,16 +3,16 @@
 @section('title', 'Room Type Details - Fiesta Resort')
 
 @push('styles')
-  @vite('resources/css/client/hotel-details.css')
+  @vite('resources/css/client/room-details.css')
 @endpush
 
 @push('scripts')
-  @vite('resources/js/client/hotel-details.js')
+  @vite('resources/js/client/room-details.js')
 @endpush
 
 @section('content')
-  <main class="details-main">
-    <div class="details-container">
+  <section class="room-details-section" data-rooms-list-url="{{ route('client.rooms.list') }}">
+    <div class="room-details-container">
       <x-client.breadcrumb 
         :items="[
           ['label' => 'Home', 'url' => route('client.home')],
@@ -21,46 +21,36 @@
         ]"
       />
 
-      <div class="hotel-header">
-        <h1 class="hotel-name" id="roomTypeName">{{ $roomType ?? 'All Room Types' }}</h1>
-        <p class="hotel-location" id="resortLocation">Fiesta Resort • Brgy. Ipil, Surigao City, Surigao del Norte</p>
+      <div class="room-header">
+        <h1 class="room-title" id="roomTypeName">{{ $roomType ?? 'All Room Types' }}</h1>
+        <p class="room-location" id="resortLocation">Fiesta Resort • Brgy. Ipil, Surigao City, Surigao del Norte</p>
       </div>
 
       @if($selectedRoomType)
-        <div class="hotel-images">
-          <div class="main-image">
-            @php
-              $roomImages = [
-                'Standard Room' => 'FiestaResort1.jpg',
-                'Deluxe King Suite' => 'FiestaResort2.jpg',
-                'Executive Suite' => 'FiestaResort3.jpg',
-                'Presidential Suite' => 'FiestaResort4.jpg',
-              ];
-              $image = $roomImages[$selectedRoomType->room_type] ?? 'FiestaResort1.jpg';
-            @endphp
-            <img src="{{ asset('assets/' . $image) }}" alt="{{ $selectedRoomType->room_type }}" id="mainImage" />
-          </div>
-          <div class="secondary-image">
-            <img src="{{ asset('assets/FiestaResort5.jpg') }}" alt="Resort View" id="secondaryImage" />
-          </div>
+        <div class="room-image-wrapper">
+          @php
+            $roomImages = [
+              'Standard Room' => 'FiestaResort1.jpg',
+              'Deluxe King Suite' => 'FiestaResort2.jpg',
+              'Executive Suite' => 'FiestaResort3.jpg',
+              'Presidential Suite' => 'FiestaResort4.jpg',
+            ];
+            $image = $roomImages[$selectedRoomType->room_type] ?? 'FiestaResort1.jpg';
+          @endphp
+          <img src="{{ asset('assets/' . $image) }}" alt="{{ $selectedRoomType->room_type }}" class="room-image" id="roomImage" />
         </div>
       @else
-        <div class="hotel-images">
-          <div class="main-image">
-            <img src="{{ asset('assets/FiestaResort1.jpg') }}" alt="Fiesta Resort" id="mainImage" />
-          </div>
-          <div class="secondary-image">
-            <img src="{{ asset('assets/FiestaResort5.jpg') }}" alt="Resort View" id="secondaryImage" />
-          </div>
+        <div class="room-image-wrapper">
+          <img src="{{ asset('assets/FiestaResort1.jpg') }}" alt="Fiesta Resort" class="room-image" id="roomImage" />
         </div>
       @endif
 
-      <section class="available-rooms">
-        <h2 class="section-title">Available Room Types</h2>
-        <p class="section-description" style="margin-bottom: 2rem; color: #64748b;">
+      <section class="available-rooms-section">
+        <h2 class="section-heading">Available Room Types</h2>
+        <p style="margin-bottom: 2rem; color: #64748b; font-size: 16px;">
           Browse all our room types available at Fiesta Resort. Each room type offers unique features and amenities to make your stay comfortable and memorable.
         </p>
-        <div class="rooms-grid" id="roomsGrid">
+        <div class="rooms-grid-container" id="roomsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;">
           @php
             $roomImages = [
               'Standard Room' => 'FiestaResort1.jpg',
@@ -83,22 +73,27 @@
               $mappedType = $roomTypeMapping[$type] ?? strtolower(str_replace(' ', '-', $type));
             @endphp
             <x-client.room-card 
-              name="{{ $type }}"
-              price="₱{{ number_format($price, 0) }} per night"
+              title="{{ $type }}"
+              location="Brgy. Ipil, Surigao City"
+              :price="(int)$price"
+              :rating="0"
               image="{{ $roomImages[$type] ?? 'FiestaResort1.jpg' }}"
               badge="{{ $count > 0 && $count <= 2 ? 'Limited' : ($count > 5 ? 'Popular' : null) }}"
+              :features="['Free WiFi', 'Modern Amenities']"
               :url="route('client.room-details') . '?room=' . $mappedType . '&room_type=' . urlencode($type)"
               :data-attributes="['room-type' => $mappedType, 'room-name' => $type]"
-            />
+            >
+              {{ $count }} {{ $count == 1 ? 'room' : 'rooms' }} available
+            </x-client.room-card>
           @empty
-            <div class="empty-rooms-message">
+            <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #64748b;">
               <p>No rooms available at the moment. Please check back later.</p>
             </div>
           @endforelse
         </div>
       </section>
     </div>
-  </main>
+  </section>
 
   @section('footer')
     <footer class="details-footer">
@@ -110,10 +105,12 @@
               We kaboom your beauty holiday instantly and memorable.
             </p>
           </div>
-          <div class="owner-right">
-            <span class="owner-question">You're not registered yet?</span>
-            <a href="{{ route('register') }}" class="register-now-btn" data-auth-transition>Register Now</a>
-          </div>
+          @guest
+            <div class="owner-right">
+              <span class="owner-question">You're not registered yet?</span>
+              <a href="{{ route('register') }}" class="register-now-btn" data-auth-transition>Register Now</a>
+            </div>
+          @endguest
         </div>
       </div>
       <div class="copyright-footer">

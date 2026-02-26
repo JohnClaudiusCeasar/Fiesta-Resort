@@ -405,7 +405,10 @@ body.fade-out {
   display: flex;
   gap: 20px;
   align-items: center;
+  justify-content: center;
   box-shadow: 0 4px 20px rgba(65, 105, 225, 0.08);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .search-field {
@@ -421,6 +424,7 @@ body.fade-out {
   transition: border-color 0.3s, box-shadow 0.3s;
   font-size: 15px;
   color: #1a1a1a;
+  position: relative;
 }
 
 .search-field:hover {
@@ -435,7 +439,7 @@ body.fade-out {
 }
 
 .search-field-dropdown {
-  flex: 1;
+  min-width: 200px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -478,6 +482,42 @@ body.fade-out {
   color: #666;
 }
 
+.person-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.person-option {
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 15px;
+  color: #1a1a1a;
+}
+
+.person-option:hover {
+  background-color: #f5f9ff;
+}
+
+.person-option:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.person-option:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
 .search-btn {
   padding: 16px 40px;
   background-color: #4169e1;
@@ -489,6 +529,9 @@ body.fade-out {
   cursor: pointer;
   transition: background-color 0.3s, transform 0.1s;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .search-btn:hover {
@@ -618,6 +661,112 @@ body.fade-out {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 30px;
+}
+
+/* Rooms Listing Page */
+.page-header,
+.page-header-section {
+  padding: 60px 20px 40px;
+  background: linear-gradient(135deg, #4169e1 0%, #3557c9 100%);
+  color: white;
+  text-align: center;
+}
+
+.page-header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-title,
+.page-header-title {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: white;
+  margin-top: 0;
+}
+
+.page-description,
+.page-header-description {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.filters-section {
+  padding: 30px 20px;
+  background-color: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.filters-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.filter-label svg {
+  width: 16px;
+  height: 16px;
+  color: #4169e1;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  background-color: white;
+  transition: border-color 0.3s;
+}
+
+.filter-select:hover {
+  border-color: #4169e1;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #4169e1;
+  box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+}
+
+.reset-filters-btn {
+  padding: 12px 24px;
+  background-color: #f5f5f5;
+  color: #152c5b;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.reset-filters-btn:hover {
+  background-color: #4169e1;
+  color: white;
+  border-color: #4169e1;
 }
 
 .room-card {

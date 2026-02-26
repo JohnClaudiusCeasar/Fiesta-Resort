@@ -51,6 +51,49 @@
     close-button-id="modalClose"
   />
 
+  <!-- Modify Booking Modal -->
+  <div class="modal" id="modifyBookingModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Modify Booking</h2>
+          <button class="modal-close" id="modifyModalClose" type="button">×</button>
+        </div>
+        <div class="modal-body" id="modifyModalBody">
+          <p style="margin-bottom: 1.5rem; color: #64748b;">Update your check-in and check-out dates below.</p>
+          
+          <div class="form-group">
+            <label class="form-label">Check-in Date</label>
+            <input type="date" class="date-input-field" id="modifyCheckInDate" style="width: 100%; padding: 16px 20px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; background: white; cursor: pointer;" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Check-out Date</label>
+            <input type="date" class="date-input-field" id="modifyCheckOutDate" style="width: 100%; padding: 16px 20px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; background: white; cursor: pointer;" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Number of Nights</label>
+            <div style="padding: 16px 20px; background-color: #f8f9fa; border-radius: 12px; font-size: 18px; font-weight: 600; color: #152c5b; text-align: center;">
+              <span id="modifyNightsCount">0</span> Nights
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">New Total Price</label>
+            <div style="padding: 16px 20px; background-color: #f0f9ff; border-radius: 12px; font-size: 24px; font-weight: 700; color: #4169e1; text-align: center;">
+              ₱<span id="modifyTotalPrice">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="display: flex; gap: 1rem; padding: 1.5rem; border-top: 1px solid #e0e0e0;">
+          <button class="btn btn-secondary" id="modifyModalCancel" type="button" style="flex: 1;">Cancel</button>
+          <button class="btn btn-primary" id="modifyModalConfirm" type="button" style="flex: 1;">Update Booking</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Cancel Booking Confirmation Modal -->
   <x-client.confirmation-modal 
     id="cancelBookingModal"

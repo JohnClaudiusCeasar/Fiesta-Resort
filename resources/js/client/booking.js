@@ -50,6 +50,15 @@ async function loadBookingData() {
     return;
   }
 
+  // Ensure selected room id is present; if not, block booking early
+  if (!bookingData.room.id) {
+    if (window.showError) window.showError("Please select a specific room before booking.");
+    setTimeout(() => {
+      window.location.href = "/client/room-type-details?room_type=" + encodeURIComponent(bookingData.room.roomType || bookingData.room.room_type || "");
+    }, 1500);
+    return;
+  }
+
   // Update hotel preview
   const hotelNameEl = document.getElementById("hotelPreviewName");
   const hotelLocationEl = document.getElementById("hotelPreviewLocation");
@@ -67,8 +76,9 @@ async function loadBookingData() {
       : fallbackImage;
   }
 
-  // Set room type and price - use roomType from selected room
+  // Set room type, room_id and price - use from selected room
   window.bookingRoomType = bookingData.room.roomType || bookingData.room.type || bookingData.room.room_type || "Standard Room";
+  window.bookingRoomId = bookingData.room.id;
   const pricePerNight = bookingData.room.price || bookingData.room.price_per_night || 2000;
   window.bookingPrice = pricePerNight;
   
@@ -76,82 +86,80 @@ async function loadBookingData() {
 }
 
 function initializeDatePicker() {
-  const dateInput = document.getElementById("dateRange");
+  const checkInInput = document.getElementById("checkInDate");
+  const checkOutInput = document.getElementById("checkOutDate");
+  
+  if (!checkInInput || !checkOutInput) return;
+
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   const dayAfter = new Date(tomorrow);
   dayAfter.setDate(dayAfter.getDate() + 1);
 
-  const startDate = formatDate(tomorrow);
-  const endDate = formatDate(dayAfter);
+  // Set minimum dates
+  checkInInput.min = today.toISOString().split('T')[0];
+  checkOutInput.min = tomorrow.toISOString().split('T')[0];
 
-  dateInput.value = `${startDate} - ${endDate}`;
+  // Set default dates
+  checkInInput.value = tomorrow.toISOString().split('T')[0];
+  checkOutInput.value = dayAfter.toISOString().split('T')[0];
+  
   window.checkInDate = tomorrow;
   window.checkOutDate = dayAfter;
 
-  // Make date input clickable to open date picker
-  dateInput.addEventListener("click", openDatePicker);
-}
-
-function openDatePicker() {
-  const checkInInput = document.getElementById("checkInDateInput");
-  const checkOutInput = document.getElementById("checkOutDateInput");
-  
-  if (!checkInInput || !checkOutInput) return;
-
-  // Set minimum dates
-  const today = new Date().toISOString().split('T')[0];
-  checkInInput.min = today;
-  checkOutInput.min = today;
-
-  // Set current values
-  checkInInput.value = formatDateForInput(window.checkInDate);
-  checkOutInput.value = formatDateForInput(window.checkOutDate);
-
-  // Show check-in picker first
-  checkInInput.showPicker?.() || checkInInput.click();
-  
-  checkInInput.addEventListener("change", function onCheckInChange() {
-    const checkIn = new Date(checkInInput.value);
+  // Check-in change handler
+  checkInInput.addEventListener("change", function() {
+    const checkIn = new Date(checkInInput.value + 'T00:00:00');
     window.checkInDate = checkIn;
     
-    // Set minimum check-out to day after check-in
+    // Update check-out minimum date
     const nextDay = new Date(checkIn);
     nextDay.setDate(nextDay.getDate() + 1);
     checkOutInput.min = nextDay.toISOString().split('T')[0];
     
     // Auto-update check-out if it's before new minimum
-    if (checkOutInput.value && new Date(checkOutInput.value) <= checkIn) {
-      checkOutInput.value = nextDay.toISOString().split('T')[0];
+    if (checkOutInput.value) {
+      const currentCheckOut = new Date(checkOutInput.value + 'T00:00:00');
+      if (currentCheckOut <= checkIn) {
+        checkOutInput.value = nextDay.toISOString().split('T')[0];
+        window.checkOutDate = nextDay;
+      }
     }
     
-    checkOutInput.showPicker?.() || checkOutInput.click();
-    
-    checkOutInput.addEventListener("change", function onCheckOutChange() {
-      const checkOut = new Date(checkOutInput.value);
-      
-      if (checkOut <= checkIn) {
-        if (window.showError) window.showError("Check-out date must be after check-in date.");
-        return;
-      }
+    updateDaysAndPrice();
+  });
 
+  // Check-out change handler
+  checkOutInput.addEventListener("change", function() {
+    const checkOut = new Date(checkOutInput.value + 'T00:00:00');
+    
+    if (checkOut <= window.checkInDate) {
+      if (window.showError) {
+        window.showError("Check-out date must be after check-in date.");
+      }
+      // Reset to next day
+      const nextDay = new Date(window.checkInDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      checkOutInput.value = nextDay.toISOString().split('T')[0];
+      window.checkOutDate = nextDay;
+    } else {
       window.checkOutDate = checkOut;
-      
-      const dateInput = document.getElementById("dateRange");
-      dateInput.value = `${formatDate(checkIn)} - ${formatDate(checkOut)}`;
-      
-      // Update days count based on actual dates
-      const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-      document.getElementById("daysCount").textContent = days;
-      
-      updateTotalPrice();
-      
-      // Remove listeners to prevent multiple triggers
-      checkInInput.removeEventListener("change", onCheckInChange);
-      checkOutInput.removeEventListener("change", onCheckOutChange);
-    }, { once: true });
-  }, { once: true });
+    }
+    
+    updateDaysAndPrice();
+  });
+}
+
+function updateDaysAndPrice() {
+  if (window.checkInDate && window.checkOutDate) {
+    const days = Math.ceil((window.checkOutDate - window.checkInDate) / (1000 * 60 * 60 * 24));
+    const daysCountEl = document.getElementById("daysCount");
+    if (daysCountEl) {
+      daysCountEl.textContent = days;
+    }
+    updateTotalPrice();
+  }
 }
 
 function formatDate(date) {
@@ -184,28 +192,6 @@ function updateTotalPrice() {
 }
 
 function setupEventListeners() {
-  document.getElementById("decreaseDays").addEventListener("click", () => {
-    const daysElement = document.getElementById("daysCount");
-    let days = parseInt(daysElement.textContent, 10);
-    if (days > 1) {
-      days--;
-      daysElement.textContent = days;
-      updateDateRange(days);
-      updateTotalPrice();
-    }
-  });
-
-  document.getElementById("increaseDays").addEventListener("click", () => {
-    const daysElement = document.getElementById("daysCount");
-    let days = parseInt(daysElement.textContent, 10);
-    if (days < 30) {
-      days++;
-      daysElement.textContent = days;
-      updateDateRange(days);
-      updateTotalPrice();
-    }
-  });
-
   document.getElementById("continueToPayment").addEventListener("click", () => {
     // Validate dates
     if (!window.checkInDate || !window.checkOutDate) {
@@ -276,16 +262,6 @@ function setupEventListeners() {
   });
 }
 
-function updateDateRange(days) {
-  const startDate = window.checkInDate || new Date();
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + days);
-
-  window.checkOutDate = endDate;
-
-  const dateInput = document.getElementById("dateRange");
-  dateInput.value = `${formatDate(startDate)} - ${formatDate(endDate)}`;
-}
 
 function goToStep(stepNumber) {
   document.querySelectorAll(".booking-step").forEach((step) => {
@@ -381,6 +357,10 @@ async function processPayment() {
       throw new Error("Room type not specified");
     }
 
+    if (!window.bookingRoomId) {
+      throw new Error("Room not selected. Please go back and pick a specific room.");
+    }
+
     const paymentMethod = document.getElementById("bankName").value;
     const contactNumber = document.getElementById("gcashNumber").value.trim();
     const specialRequests = document.getElementById("validationDate").value.trim();
@@ -393,6 +373,7 @@ async function processPayment() {
     
     const bookingPayload = {
       room_type: window.bookingRoomType,
+      room_id: window.bookingRoomId,
       check_in: formatDateForInput(window.checkInDate),
       check_out: formatDateForInput(window.checkOutDate),
       guest_phone: contactNumber || user.phone || null,

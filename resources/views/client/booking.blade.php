@@ -47,30 +47,19 @@
 
           <div class="booking-form-section">
             <div class="form-group">
-              <label class="form-label">How long you will stay?</label>
-              <div class="counter-group">
-                <button class="counter-btn minus" id="decreaseDays" type="button">-</button>
-                <div class="counter-display">
-                  <span id="daysCount">2</span> Days
-                </div>
-                <button class="counter-btn plus" id="increaseDays" type="button">+</button>
-              </div>
+              <label class="form-label">Check-in Date</label>
+              <input type="date" class="date-input-field" id="checkInDate" style="width: 100%; padding: 16px 20px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; background: white; cursor: pointer;" />
             </div>
 
             <div class="form-group">
-              <label class="form-label">Pick a Date</label>
-              <div class="date-picker-wrapper">
-                <div class="date-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                </div>
-                <input type="text" class="date-input" id="dateRange" placeholder="Select dates" readonly style="cursor: pointer;" />
-                <input type="date" id="checkInDateInput" style="display: none;" />
-                <input type="date" id="checkOutDateInput" style="display: none;" />
+              <label class="form-label">Check-out Date</label>
+              <input type="date" class="date-input-field" id="checkOutDate" style="width: 100%; padding: 16px 20px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; background: white; cursor: pointer;" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Number of Nights</label>
+              <div style="padding: 16px 20px; background-color: #f8f9fa; border-radius: 12px; font-size: 18px; font-weight: 600; color: #152c5b; text-align: center;">
+                <span id="daysCount">2</span> Nights
               </div>
             </div>
 
@@ -156,29 +145,28 @@
 
     <section class="booking-step hidden" id="step3">
       <div class="step-container success-container">
-        <h1 class="step-title success-title">Yay! Payment Completed</h1>
+        <h1 class="step-title success-title" style="color: #4169e1;">🎉 Reservation Submitted Successfully!</h1>
         <div class="success-illustration">
           <svg viewBox="0 0 200 200" class="success-icon">
-            <rect x="40" y="60" width="120" height="80" rx="8" fill="#E8EDF5" />
-            <rect x="40" y="60" width="120" height="20" rx="8" fill="#CBD5E1" />
-            <rect x="40" y="80" width="120" height="60" rx="0" fill="#E8EDF5" />
-            <circle cx="65" cy="105" r="8" fill="#4169E1" />
-            <rect x="56" y="112" width="18" height="6" rx="3" fill="#4169E1" />
-            <rect x="85" y="95" width="60" height="6" rx="3" fill="#CBD5E1" />
-            <rect x="85" y="105" width="45" height="6" rx="3" fill="#CBD5E1" />
-            <rect x="85" y="115" width="50" height="6" rx="3" fill="#CBD5E1" />
-            <rect x="50" y="95" width="30" height="25" rx="4" fill="#CBD5E1" />
-            <rect x="120" y="95" width="30" height="25" rx="4" fill="#CBD5E1" />
-            <circle cx="145" cy="115" r="15" fill="#3EC1C9" />
-            <polyline points="137,115 142,120 153,109" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="100" cy="100" r="80" fill="#4169E1" />
+            <polyline points="65,100 85,120 135,70" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="100" cy="100" r="90" fill="none" stroke="#E8EDF5" stroke-width="4" />
+            <circle cx="100" cy="100" r="95" fill="none" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="5,5" />
           </svg>
         </div>
-        <p class="success-message">
-          Please check your email &amp; phone message.<br />
-          We have sent all the information
+        <p class="success-message" style="font-size: 18px; line-height: 1.8; color: #152c5b; max-width: 600px; margin: 2rem auto;">
+          <strong style="color: #4169e1; font-size: 20px;">Your booking is pending confirmation.</strong><br />
+          <br />
+          The resort will confirm your reservation when you arrive. Payment will be collected at check-in.<br />
+          <br />
+          📧 <strong>Check your email</strong> for booking details<br />
+          📱 You'll receive a <strong>notification</strong> once the resort confirms your booking<br />
+          <br />
+          <span style="color: #64748b; font-size: 16px;">Thank you for choosing Fiesta Resort!</span>
         </p>
         <div class="step-actions">
-          <a href="{{ route('client.home') }}" class="btn-link" data-auth-transition>Go to home</a>
+          <a href="{{ route('client.my-bookings') }}" class="btn-primary" style="text-decoration: none; text-align: center; display: block;">View My Bookings</a>
+          <a href="{{ route('client.home') }}" class="btn-link" data-auth-transition>Go to Home</a>
         </div>
       </div>
     </section>

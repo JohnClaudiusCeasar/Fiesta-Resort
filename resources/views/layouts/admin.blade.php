@@ -9,7 +9,6 @@
       'resources/css/admin/base.css',
       'resources/js/admin/base.js',
       'resources/js/admin/notifications.js',
-      'resources/js/dummy-data.js',
     ])
     @stack('styles')
     @php
@@ -39,31 +38,6 @@
       </div>
 
       <div class="header-icons">
-        <div class="dropdown" id="notificationDropdown">
-          <button class="icon-btn" id="notificationBtn" type="button" aria-label="Notifications">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-          </button>
-          <div class="dropdown-menu" id="notificationMenu">
-            <div class="dropdown-header">
-              <span>Notifications</span>
-              <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
-            </div>
-            <div id="notificationsList" class="notifications-list">
-              <div class="notification-loading" style="padding: 20px; text-align: center; color: #6b7280;">
-                Loading notifications...
-              </div>
-            </div>
-            <div class="dropdown-divider"></div>
-            <div class="notification-actions">
-              <button class="dropdown-item" id="markAllReadBtn" type="button" style="display: none;">Mark all as read</button>
-              <button class="dropdown-item" id="viewAllNotificationsBtn" type="button">View all notifications</button>
-            </div>
-          </div>
-        </div>
-
         <div class="dropdown" id="userDropdown">
           <button class="icon-btn" id="userBtn" type="button" aria-label="Account menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

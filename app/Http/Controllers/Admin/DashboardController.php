@@ -16,11 +16,12 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Calculate statistics
-        $totalReservations = Reservation::count();
+        // Calculate statistics - only count active reservations (exclude cancelled)
+        $totalReservations = Reservation::whereIn('status', ['pending', 'confirmed', 'checked-in'])
+            ->count();
         $availableRooms = Room::where('status', 'available')->count();
         
-        // Calculate total revenue from confirmed and checked-in reservations
+        // Calculate total revenue ONLY from confirmed and checked-in reservations (excludes pending)
         $totalRevenue = Reservation::whereIn('status', ['confirmed', 'checked-in'])
             ->sum('total_price') ?? 0;
         

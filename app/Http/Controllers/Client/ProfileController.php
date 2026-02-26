@@ -24,12 +24,15 @@ class ProfileController extends Controller
             return redirect()->route('login');
         }
 
-        // Get booking statistics
-        $reservations = Reservation::where('guest_email', $user->email)->get();
+        // Get booking statistics (exclude cancelled)
+        $reservations = Reservation::where('guest_email', $user->email)
+            ->whereIn('status', ['pending', 'confirmed', 'checked-in'])
+            ->get();
         
         $totalBookings = $reservations->count();
         $completedBookings = $reservations->where('status', 'checked-in')->count();
         $upcomingBookings = $reservations->whereIn('status', ['pending', 'confirmed'])->count();
+        // Only count spending from confirmed and checked-in (not pending)
         $totalSpent = $reservations->whereIn('status', ['confirmed', 'checked-in'])->sum('total_price');
 
         // Get recent bookings
@@ -84,11 +87,15 @@ class ProfileController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
-        $reservations = Reservation::where('guest_email', $user->email)->get();
+        // Get active reservations only (exclude cancelled)
+        $reservations = Reservation::where('guest_email', $user->email)
+            ->whereIn('status', ['pending', 'confirmed', 'checked-in'])
+            ->get();
         
         $totalBookings = $reservations->count();
         $completedBookings = $reservations->where('status', 'checked-in')->count();
         $upcomingBookings = $reservations->whereIn('status', ['pending', 'confirmed'])->count();
+        // Only count spending from confirmed and checked-in (not pending)
         $totalSpent = $reservations->whereIn('status', ['confirmed', 'checked-in'])->sum('total_price');
 
         return response()->json([

@@ -541,3 +541,47 @@ select.form-input {
   }
 }
 
+/* Flatpickr Custom Styling for Booking */
+.flatpickr-calendar {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 12px !important;
+  border: none !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+  background: #4169e1 !important;
+  border-color: #4169e1 !important;
+}
+
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover {
+  background: #3557c9 !important;
+  border-color: #3557c9 !important;
+}
+
+.flatpickr-day:hover {
+  background: #f5f9ff !important;
+  border-color: #f5f9ff !important;
+}
+
+.flatpickr-months .flatpickr-month {
+  background: #4169e1 !important;
+  color: white !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  background: #4169e1 !important;
+  color: white !important;
+}
+
+.flatpickr-weekdays {
+  background: #f5f9ff !important;
+}
+
+.date-input {
+  color: white !important;
+}
+

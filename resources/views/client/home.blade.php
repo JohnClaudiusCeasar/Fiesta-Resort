@@ -55,28 +55,6 @@
   <section class="search-section" data-rooms-url="{{ route('client.rooms') }}">
     <div class="search-container">
       <div class="search-bar">
-        <div class="search-field" id="checkInBtn" style="position: relative; cursor: pointer;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events: none;">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span id="checkInText" style="pointer-events: none;">Check In</span>
-          <input type="date" id="checkInDate" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.01; z-index: 10; cursor: pointer;" />
-        </div>
-
-        <div class="search-field" id="checkOutBtn" style="position: relative; cursor: pointer;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events: none;">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span id="checkOutText" style="pointer-events: none;">Check Out</span>
-          <input type="date" id="checkOutDate" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.01; z-index: 10; cursor: pointer;" />
-        </div>
-
         <div class="search-field-dropdown" id="personDropdown">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -84,19 +62,25 @@
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
-          <span class="dropdown-label">Person</span>
+          <span class="dropdown-label">Guests</span>
           <span class="dropdown-value" id="personValue">2</span>
           <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
           <div class="person-dropdown-menu" id="personMenu" style="display: none; position: absolute; z-index: 1000;">
             @for($i = 1; $i <= 10; $i++)
-              <div class="person-option" data-value="{{ $i }}">{{ $i }} {{ $i === 1 ? 'Person' : 'People' }}</div>
+              <div class="person-option" data-value="{{ $i }}">{{ $i }} {{ $i === 1 ? 'Guest' : 'Guests' }}</div>
             @endfor
           </div>
         </div>
 
-        <button class="search-btn" id="searchBtn" type="button">Search</button>
+        <button class="search-btn" id="searchBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; margin-right: 8px;">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          Search Available Rooms
+        </button>
       </div>
     </div>
   </section>
@@ -132,7 +116,7 @@
             $info = $roomTypeInfo[$roomType->room_type] ?? ['image' => 'FiestaResort1.jpg', 'badge' => null, 'features' => ['Free WiFi', 'Modern Amenities']];
             $roomTypeSlug = strtolower(str_replace(' ', '-', $roomType->room_type));
           @endphp
-          <x-client.hotel-card 
+          <x-client.room-card 
             title="{{ $roomType->room_type }}"
             location="Brgy. Ipil, Surigao City"
             :price="(int)$roomType->min_price"
@@ -144,7 +128,7 @@
             :data-attributes="['room-type' => $roomTypeSlug, 'room-name' => $roomType->room_type]"
           >
             {{ $roomType->room_count }} {{ $roomType->room_count == 1 ? 'room' : 'rooms' }} available from ₱{{ number_format($roomType->min_price, 0) }} per night
-          </x-client.hotel-card>
+          </x-client.room-card>
         @empty
           <p style="grid-column: 1 / -1; text-align: center; color: #64748b;">No rooms available at the moment.</p>
         @endforelse

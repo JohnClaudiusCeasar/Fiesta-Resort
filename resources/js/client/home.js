@@ -281,131 +281,35 @@ function setupSearchHandlers() {
   
   console.log('Setting up search handlers...');
   
-  // Wait a bit to ensure DOM is fully ready
   const searchBtn = document.getElementById("searchBtn");
-  const checkInBtn = document.getElementById("checkInBtn");
-  const checkOutBtn = document.getElementById("checkOutBtn");
-  const checkInDate = document.getElementById("checkInDate");
-  const checkOutDate = document.getElementById("checkOutDate");
-  const checkInText = document.getElementById("checkInText");
-  const checkOutText = document.getElementById("checkOutText");
   const personDropdown = document.getElementById("personDropdown");
   const personValue = document.getElementById("personValue");
   const personMenu = document.getElementById("personMenu");
 
-  // Check if all required elements exist
-  if (!checkInBtn || !checkOutBtn || !checkInDate || !checkOutDate || !searchBtn) {
-    // Silently return if elements don't exist (might not be on home page)
+  // Check if required elements exist
+  if (!searchBtn || !personDropdown) {
+    console.warn('Search elements not found');
     return;
   }
-
-  // Set minimum date to today
-  const today = new Date().toISOString().split('T')[0];
-  checkInDate.min = today;
-  checkInDate.value = '';
-  checkOutDate.min = today;
-  checkOutDate.value = '';
   
   console.log('Search handlers initialized successfully');
 
-  // Check-in date handler - input is now directly clickable
-  if (checkInDate) {
-    checkInDate.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
-    
-    // Also handle clicks on the button wrapper
-    if (checkInBtn) {
-      checkInBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        checkInDate.focus();
-        if (checkInDate.showPicker && typeof checkInDate.showPicker === 'function') {
-          checkInDate.showPicker().catch(() => {
-            // Fallback: input is already clickable
-          });
-        }
-      });
-    }
-
-    checkInDate.addEventListener("change", () => {
-      console.log('Check-in date changed:', checkInDate.value);
-      if (checkInDate.value) {
-        const date = new Date(checkInDate.value + 'T00:00:00');
-        const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        if (checkInText) checkInText.textContent = formatted;
-        console.log('Check-in formatted:', formatted);
-        
-        // Set minimum check-out date to day after check-in
-        if (checkOutDate) {
-          const nextDay = new Date(checkInDate.value);
-          nextDay.setDate(nextDay.getDate() + 1);
-          checkOutDate.min = nextDay.toISOString().split('T')[0];
-          
-          // If check-out is before new minimum, clear it
-          if (checkOutDate.value && new Date(checkOutDate.value) < nextDay) {
-            checkOutDate.value = '';
-            if (checkOutText) checkOutText.textContent = 'Check Out';
-          }
-        }
-      } else {
-        if (checkInText) checkInText.textContent = 'Check In';
-      }
-    });
-  }
-
-  // Check-out date handler - input is now directly clickable
-  if (checkOutDate) {
-    checkOutDate.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
-    
-    // Also handle clicks on the button wrapper
-    if (checkOutBtn) {
-      checkOutBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        if (!checkInDate?.value) {
-          const msg = "Please select check-in date first.";
-          if (window.showError) {
-            window.showError(msg);
-          } else {
-            alert(msg);
-          }
-          return;
-        }
-        
-        checkOutDate.focus();
-        if (checkOutDate.showPicker && typeof checkOutDate.showPicker === 'function') {
-          checkOutDate.showPicker().catch(() => {
-            // Fallback: input is already clickable
-          });
-        }
-      });
-    }
-
-    checkOutDate.addEventListener("change", () => {
-      console.log('Check-out date changed:', checkOutDate.value);
-      if (checkOutDate.value) {
-        const date = new Date(checkOutDate.value + 'T00:00:00');
-        const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        if (checkOutText) checkOutText.textContent = formatted;
-        console.log('Check-out formatted:', formatted);
-      } else {
-        if (checkOutText) checkOutText.textContent = 'Check Out';
-      }
-    });
-  }
-
   // Person dropdown handler
   if (personDropdown && personMenu && personValue) {
+    // Initially hide the menu
+    personMenu.style.display = "none";
+
     personDropdown.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log('Person dropdown clicked');
-      const isVisible = personMenu.style.display !== "none";
-      personMenu.style.display = isVisible ? "none" : "block";
+      console.log('Person dropdown clicked, current display:', personMenu.style.display);
+      
+      // Toggle menu visibility
+      if (personMenu.style.display === "none" || personMenu.style.display === "") {
+        personMenu.style.display = "block";
+      } else {
+        personMenu.style.display = "none";
+      }
     });
 
     const personOptions = personMenu.querySelectorAll(".person-option");
@@ -414,6 +318,7 @@ function setupSearchHandlers() {
         e.preventDefault();
         e.stopPropagation();
         const value = option.getAttribute("data-value");
+        const text = value === "1" ? "1 Person" : `${value} People`;
         console.log('Person selected:', value);
         personValue.textContent = value;
         personMenu.style.display = "none";
@@ -422,33 +327,12 @@ function setupSearchHandlers() {
 
     // Close dropdown when clicking outside
     document.addEventListener("click", (e) => {
-      if (personMenu && !personDropdown.contains(e.target) && !personMenu.contains(e.target)) {
+      if (personMenu && !personDropdown.contains(e.target)) {
         personMenu.style.display = "none";
       }
     });
   } else {
     console.warn('Person dropdown elements not found');
-  }
-
-  // Location dropdown handler
-  if (locationDropdown && locationMenu && locationValue) {
-    locationDropdown.addEventListener("click", (e) => {
-      e.stopPropagation();
-      locationMenu.style.display = locationMenu.style.display === "none" ? "block" : "none";
-    });
-
-    locationMenu.querySelectorAll(".location-option").forEach((option) => {
-      option.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const value = option.getAttribute("data-value");
-        locationValue.textContent = value || "All Locations";
-        locationMenu.style.display = "none";
-      });
-    });
-
-    document.addEventListener("click", () => {
-      if (locationMenu) locationMenu.style.display = "none";
-    });
   }
 
   // Search button handler
@@ -457,53 +341,18 @@ function setupSearchHandlers() {
       e.preventDefault();
       e.stopPropagation();
       
-      const checkIn = checkInDate?.value;
-      const checkOut = checkOutDate?.value;
       const persons = personValue?.textContent || "2";
       
-      console.log('Search clicked:', { checkIn, checkOut, persons });
-      
-      // If dates are provided, validate them
-      if (checkIn && checkOut) {
-        const checkInDateObj = new Date(checkIn + 'T00:00:00');
-        const checkOutDateObj = new Date(checkOut + 'T00:00:00');
-        
-        if (checkOutDateObj <= checkInDateObj) {
-          if (window.showError) {
-            window.showError("Check-out date must be after check-in date.");
-          } else {
-            alert("Check-out date must be after check-in date.");
-          }
-          return;
-        }
-      } else if (checkIn || checkOut) {
-        // If only one date is selected, show error
-        if (window.showError) {
-          window.showError("Please select both check-in and check-out dates, or leave both empty to browse all rooms.");
-        } else {
-          alert("Please select both check-in and check-out dates, or leave both empty to browse all rooms.");
-        }
-        return;
-      }
+      console.log('Search clicked with persons:', persons);
 
-      // Build search URL
+      // Build search URL with person count
       const params = new URLSearchParams();
-      
-      if (checkIn && checkOut) {
-        params.append('check_in', checkIn);
-        params.append('check_out', checkOut);
-      }
-      
-      // Always include persons if it's not the default
       const personsNum = parseInt(persons) || 2;
-      if (personsNum !== 2) {
-        params.append('persons', personsNum.toString());
-      }
+      params.append('persons', personsNum.toString());
 
       // Redirect to rooms page with search parameters
       const roomsUrl = document.querySelector('[data-rooms-url]')?.getAttribute('data-rooms-url') || '/client/rooms';
-      const queryString = params.toString();
-      const finalUrl = queryString ? roomsUrl + "?" + queryString : roomsUrl;
+      const finalUrl = roomsUrl + "?" + params.toString();
       
       console.log('Redirecting to:', finalUrl);
       window.location.href = finalUrl;
@@ -656,4 +505,5 @@ if (contactForm) {
     }
   });
 }
+
 

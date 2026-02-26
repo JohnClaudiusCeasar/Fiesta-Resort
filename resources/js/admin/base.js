@@ -17,41 +17,17 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-const notificationBtn = document.getElementById("notificationBtn");
-const notificationMenu = document.getElementById("notificationMenu");
 const userBtn = document.getElementById("userBtn");
 const userMenu = document.getElementById("userMenu");
-
-if (notificationBtn && notificationMenu) {
-  notificationBtn.addEventListener("click", (event) => {
-    event.stopPropagation();
-    notificationMenu.classList.toggle("show");
-    if (userMenu) {
-      userMenu.classList.remove("show");
-    }
-  });
-}
 
 if (userBtn && userMenu) {
   userBtn.addEventListener("click", (event) => {
     event.stopPropagation();
     userMenu.classList.toggle("show");
-    if (notificationMenu) {
-      notificationMenu.classList.remove("show");
-    }
   });
 }
 
 document.addEventListener("click", (event) => {
-  if (
-    notificationMenu &&
-    notificationMenu.classList.contains("show") &&
-    !notificationMenu.contains(event.target) &&
-    event.target !== notificationBtn
-  ) {
-    notificationMenu.classList.remove("show");
-  }
-
   if (
     userMenu &&
     userMenu.classList.contains("show") &&

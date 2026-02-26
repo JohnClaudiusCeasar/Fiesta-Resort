@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Fiesta Resort')</title>
     @stack('styles')
-    @vite('resources/js/dummy-data.js')
   </head>
   <body>
     <header class="auth-header">

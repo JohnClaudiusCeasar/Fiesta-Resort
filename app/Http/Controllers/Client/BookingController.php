@@ -55,8 +55,8 @@ class BookingController extends Controller
 
         // Find a room that is available for the requested dates
         $availableRoom = $rooms->first(function ($room) use ($validated) {
-            return $room->isAvailableForDates($validated['check_in'], $validated['check_out']);
-        });
+                return $room->isAvailableForDates($validated['check_in'], $validated['check_out']);
+            });
 
         if (!$availableRoom) {
             // Provide more helpful error message
@@ -248,6 +248,78 @@ class BookingController extends Controller
         return response()->json([
             'success' => true,
             'data' => $reservations,
+        ]);
+    }
+
+    /**
+     * Update a booking/reservation dates.
+     */
+    public function updateBooking(Request $request, string $id): JsonResponse
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $validated = $request->validate([
+            'check_in' => 'required|date|after_or_equal:today',
+            'check_out' => 'required|date|after:check_in',
+        ]);
+
+        $reservation = Reservation::where('id', $id)
+            ->where('guest_email', $user->email)
+            ->with('room')
+            ->firstOrFail();
+
+        // Only allow modification of pending or confirmed reservations
+        if (!in_array($reservation->status, ['pending', 'confirmed'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending or confirmed bookings can be modified.',
+            ], 422);
+        }
+
+        // Check if the room is available for the new dates
+        if ($reservation->room && !$reservation->room->isAvailableForDates(
+            $validated['check_in'],
+            $validated['check_out'],
+            $reservation->id
+        )) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The room is not available for the selected dates. Please choose different dates.',
+            ], 422);
+        }
+
+        // Calculate new total price
+        $nights = Carbon::parse($validated['check_in'])->diffInDays(Carbon::parse($validated['check_out']));
+        $pricePerNight = $reservation->room ? $reservation->room->price_per_night : ($reservation->total_price / Carbon::parse($reservation->check_in)->diffInDays(Carbon::parse($reservation->check_out)));
+        $newTotalPrice = $pricePerNight * $nights;
+
+        // Update reservation
+        $reservation->check_in = $validated['check_in'];
+        $reservation->check_out = $validated['check_out'];
+        $reservation->total_price = $newTotalPrice;
+        $reservation->save();
+
+        // Create notification for admin
+        Notification::createNotification(
+            'reservation',
+            'Booking Modified',
+            "Booking #{$reservation->id} modified by {$user->name}",
+            route('admin.reservations')
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking dates updated successfully!',
+            'data' => [
+                'check_in' => $reservation->check_in->format('Y-m-d'),
+                'check_out' => $reservation->check_out->format('Y-m-d'),
+                'total_price' => $newTotalPrice,
+                'nights' => $nights,
+            ],
         ]);
     }
 
